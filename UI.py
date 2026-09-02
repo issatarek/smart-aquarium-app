@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     ft.app(
       target=main,
-      view=ft.AppView.WEB_BROWSER,
+      view= None if IS_CLOUD else ft.AppView.WEB_BROWSER,
       host="0.0.0.0" if IS_CLOUD else "192.168.43.13",
       port=port,
   )
