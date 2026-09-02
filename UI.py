@@ -1,8 +1,10 @@
+import os
+from urllib.parse import parse_qs, urlparse
 import flet as ft
 import cards as cd
 
 def main(page: ft.Page):
-    page.title = "Smart Aquarium System (Offline)"
+    page.title = "Smart Aquarium System "
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 20
 
@@ -36,9 +38,32 @@ def main(page: ft.Page):
     master = ft.Column(controls=[top_bar, dashboard_frame], expand=True, spacing=20)
     page.add(master)
 
+    # Route change event listener (The Web Listener)
+    def handle_route_change(e: ft.RouteChangeEvent):
+        # Parse incoming web parameters (e.g., /?ph=8.2&height=65.0&tds=280)
+        parsed_url = urlparse(page.route)
+        query_params = parse_qs(parsed_url.query)
+
+        if query_params:
+          cd.update_all_cards_from_query(query_params)
+          page.update()
+
+  # Bind listener and process initial route on connection
+    page.on_route_change = handle_route_change
+    page.go(page.route)
+
+
 if __name__ == "__main__":
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER,
-        host="192.168.43.13",  # Accessible to other devices on  local Wi-Fi network(From my hot spot)
-        port=60868)
+    # Detect if running in a cloud container (e.g., Render) vs local network
+    IS_CLOUD = "PORT" in os.environ
+    port = int(os.environ.get("PORT", 60868))
+
+    ft.app(
+      target=main,
+      view=ft.AppView.WEB_BROWSER,
+      host="0.0.0.0" if IS_CLOUD else "192.168.43.13",
+      port=port,
+  )
+
     'IPv4 Address. . . . . . . . . . . : 192.168.43.13'
     'http://192.168.43.13:60868'
